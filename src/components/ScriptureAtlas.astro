@@ -1,3 +1,7 @@
+---
+import AtlasSettings from './AtlasSettings.astro';
+---
+
 <main id="scripture-atlas" data-state="loading">
 	<div class="atmosphere" aria-hidden="true"></div>
 	<canvas
@@ -132,6 +136,19 @@
 				</svg>
 				<span>Random</span>
 			</button>
+			<button
+				class="icon-button"
+				id="settings-button"
+				type="button"
+				aria-label="Open display settings"
+				aria-controls="atlas-settings"
+				aria-haspopup="dialog"
+				title="Display settings"
+			>
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M4 7h10M18 7h2M14 4v6M4 17h2M10 17h10M10 14v6"></path>
+				</svg>
+			</button>
 			<button class="icon-button" id="reset-view" type="button" aria-label="Reset view">
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M20 12a8 8 0 1 1-2.34-5.66L20 8M20 4v4h-4"></path>
@@ -139,6 +156,8 @@
 			</button>
 		</div>
 	</footer>
+
+	<AtlasSettings />
 
 	<div class="loading-screen" id="loading-screen" role="status" aria-live="polite">
 		<div class="loading-orbit" aria-hidden="true"><i></i><i></i><i></i></div>

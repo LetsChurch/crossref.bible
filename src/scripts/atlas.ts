@@ -82,6 +82,17 @@ interface ConnectionLinkData {
 	votes: number;
 }
 
+interface AtlasSettings {
+	exposure: number;
+	glow: number;
+	ambientConnections: boolean;
+	backgroundStars: boolean;
+	idleMotion: boolean;
+}
+
+const SETTINGS_STORAGE_KEY = 'crossref-atlas-settings-v1';
+const MAX_BLOOM_STRENGTH = 0.84;
+
 const root = document.getElementById('scripture-atlas');
 
 if (root) {
@@ -144,6 +155,19 @@ function buildScene({
 	const closePanel = requireElement<HTMLButtonElement>(atlasRoot, '#close-panel');
 	const resetViewButton = requireElement<HTMLButtonElement>(atlasRoot, '#reset-view');
 	const randomVerseButton = requireElement<HTMLButtonElement>(atlasRoot, '#random-verse');
+	const settingsButton = requireElement<HTMLButtonElement>(atlasRoot, '#settings-button');
+	const settingsDialog = requireElement<HTMLDialogElement>(atlasRoot, '#atlas-settings');
+	const settingsExposure = requireElement<HTMLInputElement>(atlasRoot, '#settings-exposure');
+	const settingsExposureOutput = requireElement<HTMLOutputElement>(atlasRoot, '#settings-exposure-output');
+	const settingsGlow = requireElement<HTMLInputElement>(atlasRoot, '#settings-glow');
+	const settingsGlowOutput = requireElement<HTMLOutputElement>(atlasRoot, '#settings-glow-output');
+	const settingsConnections = requireElement<HTMLInputElement>(atlasRoot, '#settings-connections');
+	const settingsStars = requireElement<HTMLInputElement>(atlasRoot, '#settings-stars');
+	const settingsIdleMotion = requireElement<HTMLInputElement>(atlasRoot, '#settings-idle-motion');
+	const settingsIdleMotionDescription = requireElement<HTMLElement>(atlasRoot, '#settings-idle-motion-description');
+	const settingsReset = requireElement<HTMLButtonElement>(atlasRoot, '#settings-reset');
+	let settings = loadAtlasSettings(reducedMotion);
+	let mobileLayout = atlasRoot.clientWidth < 700;
 
 	atlasTotal.textContent = `${links.stats.crossReferences.toLocaleString()} cross-references`;
 
@@ -169,12 +193,12 @@ function buildScene({
 
 	renderer.outputColorSpace = THREE.SRGBColorSpace;
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
-	renderer.toneMappingExposure = 0.72;
+	renderer.toneMappingExposure = settings.exposure;
 	renderer.setClearColor(0x03050d, 1);
 
 	const composer = new EffectComposer(renderer);
 	composer.addPass(new RenderPass(scene, camera));
-	const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.34, 0.58);
+	const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), settings.glow * MAX_BLOOM_STRENGTH, 0.34, 0.58);
 	composer.addPass(bloomPass);
 	composer.addPass(new OutputPass());
 
@@ -201,10 +225,12 @@ function buildScene({
 	canonGroup.add(versePoints);
 	canonGroup.add(createTestamentFields(atlas.bookAngles));
 	canonGroup.add(createBookDividers(scripture, atlas.bookAngles));
-	canonGroup.add(createAmbientConnections(scripture, links, atlas.positions, atlas.bookForVerse));
+	const ambientConnections = createAmbientConnections(scripture, links, atlas.positions, atlas.bookForVerse);
+	canonGroup.add(ambientConnections);
 	canonGroup.add(createCanonOrbits());
-	scene.add(createStarField(1800, 34));
-	scene.add(createStarField(700, 18));
+	const starField = new THREE.Group();
+	starField.add(createStarField(1800, 34), createStarField(700, 18));
+	scene.add(starField);
 
 	const glowTexture = createGlowTexture();
 	const selectionGroup = new THREE.Group();
@@ -250,6 +276,41 @@ function buildScene({
 	let selectedConnectionLinks: ConnectionLinkData[] = [];
 	let connectionsExpanded = false;
 	const compactConnectionQuery = window.matchMedia('(max-width: 640px)');
+
+	function syncSettingsControls() {
+		const exposurePercent = Math.round(settings.exposure * 100);
+		const glowPercent = Math.round(settings.glow * 100);
+		settingsExposure.value = String(exposurePercent);
+		settingsExposureOutput.value = `${settings.exposure.toFixed(2)}×`;
+		settingsExposure.setAttribute('aria-valuetext', `${settings.exposure.toFixed(2)} times exposure`);
+		settingsExposure.style.setProperty('--range-progress', `${exposurePercent - 35}%`);
+		settingsGlow.value = String(glowPercent);
+		settingsGlowOutput.value = `${glowPercent}%`;
+		settingsGlow.style.setProperty('--range-progress', `${glowPercent}%`);
+		settingsConnections.checked = settings.ambientConnections;
+		settingsStars.checked = settings.backgroundStars;
+		settingsIdleMotion.checked = settings.idleMotion;
+		settingsIdleMotion.disabled = reducedMotion;
+		settingsIdleMotionDescription.textContent = reducedMotion
+			? 'Disabled by your system’s reduced-motion preference.'
+			: 'Gently move the atlas after a few seconds.';
+	}
+
+	function applySettings(persist = true) {
+		renderer.toneMappingExposure = settings.exposure;
+		bloomPass.strength = settings.glow * MAX_BLOOM_STRENGTH * (mobileLayout ? 0.72 : 1);
+		ambientConnections.visible = settings.ambientConnections;
+		starField.visible = settings.backgroundStars;
+		syncSettingsControls();
+		if (persist) saveAtlasSettings(settings);
+	}
+
+	function updateSettings(next: Partial<AtlasSettings>) {
+		settings = { ...settings, ...next };
+		applySettings();
+	}
+
+	applySettings(false);
 
 	function registerInteraction() {
 		lastInteractionTime = performance.now();
@@ -669,6 +730,43 @@ function buildScene({
 
 	resetViewButton.addEventListener('click', resetView);
 
+	settingsButton.addEventListener('click', () => {
+		registerInteraction();
+		hideSearchResults();
+		settingsDialog.showModal();
+	});
+
+	settingsDialog.addEventListener('close', () => settingsButton.focus());
+
+	settingsDialog.addEventListener('click', (event) => {
+		if (event.target === settingsDialog) settingsDialog.close();
+	});
+
+	settingsExposure.addEventListener('input', () => {
+		updateSettings({ exposure: Number(settingsExposure.value) / 100 });
+	});
+
+	settingsGlow.addEventListener('input', () => {
+		updateSettings({ glow: Number(settingsGlow.value) / 100 });
+	});
+
+	settingsConnections.addEventListener('change', () => {
+		updateSettings({ ambientConnections: settingsConnections.checked });
+	});
+
+	settingsStars.addEventListener('change', () => {
+		updateSettings({ backgroundStars: settingsStars.checked });
+	});
+
+	settingsIdleMotion.addEventListener('change', () => {
+		updateSettings({ idleMotion: settingsIdleMotion.checked });
+	});
+
+	settingsReset.addEventListener('click', () => {
+		settings = getDefaultAtlasSettings(reducedMotion);
+		applySettings();
+	});
+
 	randomVerseButton.addEventListener('click', () => {
 		const connectedSources: number[] = [];
 		for (let index = 0; index < scripture.refs.length; index += 1) {
@@ -679,6 +777,7 @@ function buildScene({
 	});
 
 	window.addEventListener('keydown', (event) => {
+		if (settingsDialog.open) return;
 		if (event.key === '/' && document.activeElement !== passageQuery) {
 			registerInteraction();
 			event.preventDefault();
@@ -695,6 +794,7 @@ function buildScene({
 		const width = atlasRoot.clientWidth;
 		const height = atlasRoot.clientHeight;
 		const mobile = width < 700;
+		mobileLayout = mobile;
 		const pixelRatio = Math.min(window.devicePixelRatio, mobile ? 1.25 : 1.7);
 		camera.aspect = width / height;
 		camera.fov = mobile ? 52 : 42;
@@ -703,7 +803,7 @@ function buildScene({
 		renderer.setSize(width, height, false);
 		composer.setPixelRatio(pixelRatio);
 		composer.setSize(width, height);
-		bloomPass.strength = mobile ? 0.3 : 0.42;
+		bloomPass.strength = settings.glow * MAX_BLOOM_STRENGTH * (mobile ? 0.72 : 1);
 	}
 
 	const resizeObserver = new ResizeObserver(resize);
@@ -736,7 +836,8 @@ function buildScene({
 			}
 		}
 
-		const idleMotionActive = !reducedMotion
+		const idleMotionActive = settings.idleMotion
+			&& !reducedMotion
 			&& !interactionActive
 			&& !cameraAnimating
 			&& currentTime - lastInteractionTime >= idleDelay;
@@ -1261,6 +1362,54 @@ function escapeHtml(value: string) {
 		.replaceAll('>', '&gt;')
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#039;');
+}
+
+function getDefaultAtlasSettings(reducedMotion: boolean): AtlasSettings {
+	return {
+		exposure: 0.72,
+		glow: 0.5,
+		ambientConnections: true,
+		backgroundStars: true,
+		idleMotion: !reducedMotion,
+	};
+}
+
+function loadAtlasSettings(reducedMotion: boolean) {
+	const defaults = getDefaultAtlasSettings(reducedMotion);
+	try {
+		const stored = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+		if (!stored) return defaults;
+		const parsed = JSON.parse(stored) as Record<string, unknown>;
+		return {
+			exposure: clampSetting(parsed.exposure, 0.35, 1.35, defaults.exposure),
+			glow: clampSetting(parsed.glow, 0, 1, defaults.glow),
+			ambientConnections: typeof parsed.ambientConnections === 'boolean'
+				? parsed.ambientConnections
+				: defaults.ambientConnections,
+			backgroundStars: typeof parsed.backgroundStars === 'boolean'
+				? parsed.backgroundStars
+				: defaults.backgroundStars,
+			idleMotion: reducedMotion
+				? false
+				: typeof parsed.idleMotion === 'boolean' ? parsed.idleMotion : defaults.idleMotion,
+		};
+	} catch {
+		return defaults;
+	}
+}
+
+function saveAtlasSettings(settings: AtlasSettings) {
+	try {
+		window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+	} catch {
+		// The atlas remains usable when storage is unavailable or blocked.
+	}
+}
+
+function clampSetting(value: unknown, minimum: number, maximum: number, fallback: number) {
+	return typeof value === 'number' && Number.isFinite(value)
+		? THREE.MathUtils.clamp(value, minimum, maximum)
+		: fallback;
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
