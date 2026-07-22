@@ -1,0 +1,28 @@
+{
+  "name": "crossrefs-bible",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "check": "astro check",
+    "deploy": "pnpm run build && wrangler deploy",
+    "prepare-data": "node scripts/prepare-data.mjs",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^7.1.3",
+    "flexsearch": "^0.8.212",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/three": "^0.185.1",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.113.0"
+  }
+}

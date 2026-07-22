@@ -1,0 +1,1199 @@
+<main id="scripture-atlas" data-state="loading">
+	<div class="atmosphere" aria-hidden="true"></div>
+	<canvas
+		id="atlas-canvas"
+		aria-label="Interactive three-dimensional map of every verse in the Bible and its cross references"
+	></canvas>
+
+	<header class="masthead">
+		<div class="brand">
+			<p class="eyebrow"><span></span> Bible cross references</p>
+			<h1>Bible<br /><em>Connections</em></h1>
+			<p class="deck">
+				Each point represents a verse. Each line represents a cross-reference.<br />
+				Select a verse to examine its connections.
+			</p>
+		</div>
+
+		<form class="passage-search" id="passage-search" role="search">
+			<label for="passage-query">Find a passage</label>
+			<div class="search-control">
+				<div class="search-shell" id="search-shell">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="11" cy="11" r="6.5"></circle>
+						<path d="m16 16 4 4"></path>
+					</svg>
+					<input
+						id="passage-query"
+						type="search"
+						placeholder="Reference or phrase"
+						autocomplete="off"
+						spellcheck="false"
+						role="combobox"
+						aria-autocomplete="list"
+						aria-controls="search-results"
+						aria-expanded="false"
+					/>
+					<button type="submit">Find</button>
+				</div>
+				<div class="search-results" id="search-results" role="listbox" aria-label="Passage matches" hidden></div>
+			</div>
+			<p class="search-message" id="search-message" aria-live="polite"></p>
+		</form>
+	</header>
+
+	<aside
+		class="passage-panel"
+		id="passage-panel"
+		aria-live="polite"
+		aria-label="Selected passage"
+		aria-hidden="true"
+		inert
+	>
+		<div class="panel-heading">
+			<div>
+				<p class="passage-kicker" id="passage-book">Genesis · The Law</p>
+				<h2>
+					<a
+						class="passage-link"
+						id="passage-link"
+						href="https://lets.bible/bible/genesis/1?v=1&fromSearch=Genesis+1%3A1&fromTranslation=BSB"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="Open Genesis 1:1 on Lets.Bible"
+					>
+						<span id="passage-reference">Genesis 1:1</span>
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M14 5h5v5M19 5l-9 9M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path>
+						</svg>
+					</a>
+				</h2>
+			</div>
+			<button class="icon-button" id="close-panel" type="button" aria-label="Close passage details">
+				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+			</button>
+		</div>
+
+		<blockquote id="passage-text">
+			In the beginning God created the heavens and the earth.
+		</blockquote>
+		<p class="translation-mark">Berean Standard Bible <span>BSB</span></p>
+
+		<div class="connection-heading">
+			<p>Cross-references</p>
+			<p id="connection-count">—</p>
+		</div>
+		<div class="connection-list" id="connection-list"></div>
+		<button
+			class="connection-toggle"
+			id="connection-toggle"
+			type="button"
+			aria-controls="connection-list"
+			aria-expanded="false"
+			hidden
+		>
+			Show all
+		</button>
+	</aside>
+
+	<div class="hover-label" id="hover-label" role="status" hidden>
+		<span id="hover-reference">Genesis 1:1</span>
+		<span>select verse</span>
+	</div>
+
+	<footer class="hud">
+		<div class="legend-block">
+			<div class="footer-primary">
+				<div class="legend" aria-label="Map legend">
+					<span><i class="legend-dot old"></i> Old Testament</span>
+					<span><i class="legend-dot new"></i> New Testament</span>
+					<span class="total" id="atlas-total">344,794 cross-references</span>
+				</div>
+				<span class="site-links" role="navigation" aria-label="Related sites">
+					<a href="https://lets.church/">Lets.Church</a>
+					<span aria-hidden="true">·</span>
+					<a href="https://lets.bible/">Lets.Bible</a>
+				</span>
+			</div>
+			<p class="data-credit">
+				<span class="source-credit">
+					<span class="credit-prefix">Cross-reference data from </span>
+					<a href="https://www.openbible.info/labs/cross-references/">OpenBible.info</a>
+					<span aria-hidden="true">·</span>
+					<a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>
+				</span>
+			</p>
+		</div>
+		<p class="gesture-hint" id="gesture-hint">Drag to orbit <i></i> Scroll to zoom <i></i> Select a verse</p>
+		<div class="hud-actions">
+			<button id="random-verse" type="button" aria-label="Select a random verse with cross-references">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M18 4h2v2M4 20 20 4M20 18v2h-2M15 15l5 5M4 4l5 5"></path>
+				</svg>
+				<span>Random</span>
+			</button>
+			<button class="icon-button" id="reset-view" type="button" aria-label="Reset view">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M20 12a8 8 0 1 1-2.34-5.66L20 8M20 4v4h-4"></path>
+				</svg>
+			</button>
+		</div>
+	</footer>
+
+	<div class="loading-screen" id="loading-screen" role="status" aria-live="polite">
+		<div class="loading-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+		<p>Loading the cross-reference network</p>
+		<span id="loading-detail">Loading 66 books</span>
+	</div>
+
+	<div class="webgl-error" id="webgl-error" hidden>
+		<p>This atlas requires WebGL to display the network.</p>
+	</div>
+</main>
+
+<script>
+	import '../scripts/atlas';
+</script>
+
+<style>
+	#scripture-atlas {
+		--gold: #efc16f;
+		--gold-bright: #fff1bd;
+		--blue: #89c8ee;
+		--ink: #03050d;
+		--paper: #f6f1e5;
+		position: relative;
+		isolation: isolate;
+		width: 100%;
+		height: 100svh;
+		min-height: 620px;
+		overflow: hidden;
+		color: var(--paper);
+		background:
+			radial-gradient(circle at 52% 42%, rgba(30, 50, 76, 0.24), transparent 31%),
+			radial-gradient(circle at 70% 80%, rgba(76, 49, 18, 0.12), transparent 35%),
+			#03050d;
+	}
+
+	#scripture-atlas::after {
+		position: absolute;
+		z-index: 2;
+		inset: 0;
+		pointer-events: none;
+		content: "";
+		opacity: 0.18;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+		mix-blend-mode: soft-light;
+	}
+
+	.atmosphere {
+		position: absolute;
+		z-index: 0;
+		inset: -20%;
+		pointer-events: none;
+		background:
+			radial-gradient(ellipse at center, transparent 0 23%, rgba(2, 4, 11, 0.28) 55%, #02030a 78%),
+			linear-gradient(110deg, rgba(239, 193, 111, 0.04), transparent 37% 65%, rgba(86, 159, 207, 0.05));
+	}
+
+	#atlas-canvas {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		cursor: grab;
+		touch-action: none;
+	}
+
+	#atlas-canvas:active {
+		cursor: grabbing;
+	}
+
+	.masthead {
+		position: absolute;
+		z-index: 6;
+		top: 0;
+		left: 0;
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		padding: clamp(1.4rem, 4vw, 3.5rem) clamp(1.25rem, 5vw, 5rem);
+		pointer-events: none;
+	}
+
+	.brand,
+	.passage-search {
+		pointer-events: auto;
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		margin: 0 0 0.85rem;
+		color: rgba(246, 241, 229, 0.78);
+		font-size: 0.64rem;
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		text-shadow: 0 2px 12px rgba(0, 0, 0, 0.92);
+		text-transform: uppercase;
+	}
+
+	.eyebrow span {
+		display: inline-block;
+		width: 2.2rem;
+		height: 1px;
+		background: linear-gradient(90deg, var(--gold), transparent);
+	}
+
+	h1 {
+		max-width: 8ch;
+		margin: 0;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(3.6rem, 7.4vw, 7.2rem);
+		font-weight: 400;
+		line-height: 0.72;
+		letter-spacing: -0.065em;
+		text-wrap: balance;
+		text-shadow: 0 3px 18px rgba(0, 0, 0, 0.94), 0 18px 60px rgba(0, 0, 0, 0.82);
+	}
+
+	h1 em {
+		color: var(--gold-bright);
+		font-weight: 400;
+		text-shadow: 0 3px 18px rgba(0, 0, 0, 0.92), 0 0 36px rgba(239, 193, 111, 0.18);
+	}
+
+	.deck {
+		margin: 1.5rem 0 0 0.35rem;
+		color: rgba(246, 241, 229, 0.72);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(0.98rem, 1.2vw, 1.16rem);
+		font-style: italic;
+		line-height: 1.55;
+		letter-spacing: 0.015em;
+		text-shadow: 0 2px 14px rgba(0, 0, 0, 0.94);
+	}
+
+	.passage-search {
+		position: relative;
+		width: min(25rem, 34vw);
+		margin-top: 0.25rem;
+	}
+
+	.passage-search label {
+		display: block;
+		margin: 0 0 0.55rem 0.95rem;
+		color: rgba(246, 241, 229, 0.68);
+		font-size: 0.61rem;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-shadow: 0 2px 12px rgba(0, 0, 0, 0.92);
+		text-transform: uppercase;
+	}
+
+	.search-control {
+		position: relative;
+	}
+
+	.search-shell {
+		display: grid;
+		grid-template-columns: 1rem 1fr auto;
+		align-items: center;
+		gap: 0.7rem;
+		padding: 0.35rem 0.38rem 0.35rem 0.95rem;
+		border: 1px solid rgba(246, 241, 229, 0.13);
+		border-radius: 999px;
+		background: rgba(9, 12, 22, 0.66);
+		box-shadow: 0 16px 50px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(18px);
+		transition: border-color 180ms ease, background 180ms ease;
+	}
+
+	.search-shell:focus-within {
+		border-color: rgba(239, 193, 111, 0.58);
+		background: rgba(12, 15, 25, 0.88);
+	}
+
+	.search-shell svg,
+	.icon-button svg,
+	.hud-actions svg {
+		width: 1rem;
+		height: 1rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+	}
+
+	.search-shell svg {
+		color: rgba(246, 241, 229, 0.4);
+	}
+
+	.search-shell input {
+		min-width: 0;
+		padding: 0.65rem 0;
+		border: 0;
+		outline: 0;
+		color: var(--paper);
+		background: transparent;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1rem;
+	}
+
+	.search-shell input::placeholder {
+		color: rgba(246, 241, 229, 0.3);
+	}
+
+	.search-shell button,
+	.hud-actions > button:not(.icon-button) {
+		padding: 0.66rem 1.05rem;
+		border: 1px solid rgba(239, 193, 111, 0.45);
+		border-radius: 999px;
+		color: #f8e4b5;
+		background: rgba(239, 193, 111, 0.1);
+		font-size: 0.66rem;
+		font-weight: 700;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: background 160ms ease, transform 160ms ease;
+	}
+
+	.search-shell button:hover,
+	.hud-actions > button:not(.icon-button):hover {
+		background: rgba(239, 193, 111, 0.2);
+		transform: translateY(-1px);
+	}
+
+	.search-results {
+		position: absolute;
+		z-index: 8;
+		top: calc(100% + 0.45rem);
+		right: 0;
+		width: 100%;
+		max-height: min(25rem, 62vh);
+		overflow-y: auto;
+		padding: 0.42rem;
+		border: 1px solid rgba(246, 241, 229, 0.14);
+		border-radius: 1rem;
+		background:
+			linear-gradient(145deg, rgba(18, 22, 33, 0.96), rgba(7, 9, 17, 0.94)),
+			radial-gradient(circle at 0 0, rgba(239, 193, 111, 0.08), transparent 45%);
+		box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+		backdrop-filter: blur(22px) saturate(120%);
+	}
+
+	.search-results[hidden] {
+		display: none;
+	}
+
+	:global(.search-result) {
+		display: grid;
+		grid-template-columns: 5.6rem minmax(0, 1fr);
+		align-items: baseline;
+		gap: 0.7rem;
+		width: 100%;
+		padding: 0.7rem 0.72rem;
+		border: 0;
+		border-radius: 0.72rem;
+		color: inherit;
+		background: transparent;
+		text-align: left;
+		cursor: pointer;
+		transition: color 140ms ease, background 140ms ease;
+	}
+
+	:global(.search-result:hover),
+	:global(.search-result.is-active) {
+		color: var(--paper);
+		background: rgba(239, 193, 111, 0.11);
+	}
+
+	:global(.search-result-reference) {
+		overflow: hidden;
+		color: var(--gold-bright);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 0.82rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	:global(.search-result-text) {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		color: rgba(246, 241, 229, 0.7);
+		font-size: 0.72rem;
+		line-height: 1.35;
+	}
+
+	:global(.search-result-text mark) {
+		padding: 0 0.08em;
+		border-radius: 0.18em;
+		color: var(--gold-bright);
+		background: rgba(239, 193, 111, 0.16);
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
+	}
+
+	:global(.search-result.is-active .search-result-text),
+	:global(.search-result:hover .search-result-text) {
+		color: rgba(246, 241, 229, 0.9);
+	}
+
+	:global(.search-results-empty) {
+		margin: 0;
+		padding: 0.8rem 0.75rem;
+		color: rgba(246, 241, 229, 0.48);
+		font-size: 0.72rem;
+	}
+
+	.search-message {
+		min-height: 1rem;
+		margin: 0.4rem 1rem 0;
+		color: #e7a7a0;
+		font-size: 0.72rem;
+		text-align: right;
+	}
+
+	.passage-panel {
+		position: absolute;
+		z-index: 7;
+		top: 50%;
+		right: clamp(1.25rem, 5vw, 5rem);
+		width: min(25rem, calc(100% - 2.5rem));
+		padding: 1.35rem 1.4rem 1.2rem;
+		border: 1px solid rgba(246, 241, 229, 0.13);
+		border-radius: 1.25rem;
+		background:
+			linear-gradient(145deg, rgba(22, 25, 35, 0.84), rgba(7, 9, 17, 0.7)),
+			radial-gradient(circle at 0 0, rgba(239, 193, 111, 0.08), transparent 42%);
+		box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+		backdrop-filter: blur(24px) saturate(120%);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(calc(-50% + 0.8rem));
+		transition: opacity 170ms ease, transform 210ms cubic-bezier(0.25, 0.7, 0.3, 1);
+	}
+
+	.passage-panel.is-open {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(-50%);
+	}
+
+	.panel-heading {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.passage-kicker,
+	.translation-mark,
+	.connection-heading {
+		font-size: 0.62rem;
+		font-weight: 650;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+
+	.passage-kicker {
+		margin: 0 0 0.3rem;
+		color: rgba(239, 193, 111, 0.72);
+	}
+
+	.passage-panel h2 {
+		margin: 0;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+		font-weight: 400;
+		letter-spacing: -0.035em;
+	}
+
+	.passage-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		color: inherit;
+		text-decoration: none;
+		transition: color 160ms ease;
+	}
+
+	.passage-link:hover {
+		color: var(--gold-bright);
+	}
+
+	.passage-link svg {
+		width: 0.9rem;
+		height: 0.9rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+		opacity: 0.52;
+	}
+
+	.icon-button {
+		display: inline-grid;
+		flex: 0 0 auto;
+		place-items: center;
+		width: 2.2rem;
+		height: 2.2rem;
+		padding: 0;
+		border: 1px solid rgba(246, 241, 229, 0.12);
+		border-radius: 50%;
+		color: rgba(246, 241, 229, 0.62);
+		background: rgba(246, 241, 229, 0.035);
+		cursor: pointer;
+		transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+	}
+
+	.icon-button:hover {
+		border-color: rgba(239, 193, 111, 0.38);
+		color: var(--gold-bright);
+		background: rgba(239, 193, 111, 0.08);
+	}
+
+	blockquote {
+		margin: 1.25rem 0 0.65rem;
+		color: rgba(246, 241, 229, 0.9);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(1.1rem, 1.55vw, 1.32rem);
+		font-style: italic;
+		line-height: 1.52;
+	}
+
+	.translation-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0;
+		color: rgba(246, 241, 229, 0.34);
+		letter-spacing: 0.11em;
+	}
+
+	.translation-mark span {
+		padding: 0.18rem 0.38rem;
+		border: 1px solid rgba(246, 241, 229, 0.12);
+		border-radius: 0.28rem;
+		font-size: 0.54rem;
+	}
+
+	.connection-heading {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 1.35rem;
+		padding-top: 1rem;
+		border-top: 1px solid rgba(246, 241, 229, 0.09);
+		color: rgba(246, 241, 229, 0.4);
+		letter-spacing: 0.12em;
+	}
+
+	.connection-heading p {
+		margin: 0;
+	}
+
+	.connection-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.45rem;
+		margin-top: 0.7rem;
+	}
+
+	.connection-list.is-expanded {
+		max-height: 8.5rem;
+		padding-right: 0.25rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-color: rgba(239, 193, 111, 0.28) transparent;
+		scrollbar-width: thin;
+	}
+
+	.connection-toggle {
+		display: block;
+		margin: 0.75rem auto 0;
+		padding: 0.35rem 0.6rem;
+		border: 0;
+		color: rgba(239, 193, 111, 0.72);
+		background: transparent;
+		font: inherit;
+		font-size: 0.6rem;
+		font-weight: 650;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: color 160ms ease;
+	}
+
+	.connection-toggle:hover {
+		color: var(--gold-bright);
+	}
+
+	.connection-toggle[hidden] {
+		display: none;
+	}
+
+	:global(.connection-link) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		min-width: 0;
+		padding: 0.68rem 0.72rem;
+		border: 1px solid rgba(246, 241, 229, 0.09);
+		border-radius: 0.65rem;
+		color: rgba(246, 241, 229, 0.72);
+		background: rgba(246, 241, 229, 0.025);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 0.86rem;
+		text-align: left;
+		cursor: pointer;
+		transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+	}
+
+	:global(.connection-item) {
+		position: relative;
+		min-width: 0;
+	}
+
+	:global(.connection-item .connection-link) {
+		width: 100%;
+		padding-right: 2.75rem;
+	}
+
+	:global(.connection-external) {
+		position: absolute;
+		top: 1px;
+		right: 1px;
+		bottom: 1px;
+		display: grid;
+		place-items: center;
+		width: 2.2rem;
+		border-left: 1px solid rgba(246, 241, 229, 0.08);
+		border-radius: 0 0.6rem 0.6rem 0;
+		color: rgba(246, 241, 229, 0.38);
+		text-decoration: none;
+		transition: color 160ms ease, background 160ms ease;
+	}
+
+	:global(.connection-external:hover) {
+		color: var(--gold-bright);
+		background: rgba(239, 193, 111, 0.08);
+	}
+
+	:global(.connection-external svg) {
+		width: 0.78rem;
+		height: 0.78rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.6;
+	}
+
+	:global(.connection-link:hover) {
+		border-color: rgba(239, 193, 111, 0.33);
+		color: var(--gold-bright);
+		background: rgba(239, 193, 111, 0.06);
+	}
+
+	:global(.connection-link span:first-child) {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	:global(.connection-empty) {
+		grid-column: 1 / -1;
+		margin: 0.25rem 0;
+		color: rgba(246, 241, 229, 0.38);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 0.9rem;
+		font-style: italic;
+	}
+
+	.hover-label {
+		position: absolute;
+		z-index: 7;
+		display: flex;
+		flex-direction: column;
+		gap: 0.14rem;
+		padding: 0.55rem 0.68rem;
+		border: 1px solid rgba(239, 193, 111, 0.24);
+		border-radius: 0.5rem;
+		color: var(--paper);
+		background: rgba(6, 8, 15, 0.88);
+		box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+		backdrop-filter: blur(14px);
+		pointer-events: none;
+		transform: translate(0.75rem, calc(-100% - 0.75rem));
+	}
+
+	.hover-label[hidden] {
+		display: none;
+	}
+
+	.hover-label span:first-child {
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 0.9rem;
+	}
+
+	.hover-label span:last-child {
+		color: rgba(246, 241, 229, 0.35);
+		font-size: 0.54rem;
+		font-weight: 650;
+		letter-spacing: 0.11em;
+		text-transform: uppercase;
+	}
+
+	.hud {
+		position: absolute;
+		z-index: 4;
+		isolation: isolate;
+		bottom: 0;
+		left: 0;
+		display: flex;
+		align-items: center;
+		gap: clamp(0.8rem, 1.8vw, 2rem);
+		width: 100%;
+		padding: 1.5rem clamp(1.25rem, 5vw, 5rem) clamp(1.35rem, 4vw, 3rem);
+		pointer-events: none;
+	}
+
+	.hud::before {
+		position: absolute;
+		z-index: -1;
+		inset: -1.35rem 0 -0.25rem;
+		pointer-events: none;
+		content: "";
+		background: linear-gradient(180deg, transparent, rgba(3, 5, 13, 0.42) 38%, rgba(3, 5, 13, 0.9));
+		-webkit-backdrop-filter: blur(2px);
+		backdrop-filter: blur(2px);
+		-webkit-mask-image: linear-gradient(180deg, transparent, #000 42%, #000);
+		mask-image: linear-gradient(180deg, transparent, #000 42%, #000);
+	}
+
+	.legend-block,
+	.gesture-hint,
+	.hud-actions {
+		pointer-events: auto;
+	}
+
+	.legend-block {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.4rem;
+		min-width: 0;
+	}
+
+	.footer-primary {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem clamp(0.8rem, 1.6vw, 1.5rem);
+	}
+
+	.legend {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: center;
+		gap: 1rem;
+		color: rgba(246, 241, 229, 0.76);
+		font-size: 0.61rem;
+		font-weight: 600;
+		letter-spacing: 0.09em;
+		text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+		text-transform: uppercase;
+	}
+
+	.legend > span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.38rem;
+	}
+
+	.legend-dot {
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		box-shadow: 0 0 10px currentColor;
+	}
+
+	.legend-dot.old {
+		color: var(--gold);
+		background: currentColor;
+	}
+
+	.legend-dot.new {
+		color: var(--blue);
+		background: currentColor;
+	}
+
+	.legend .total {
+		padding-left: 1rem;
+		border-left: 1px solid rgba(246, 241, 229, 0.12);
+		color: rgba(246, 241, 229, 0.56);
+	}
+
+	.data-credit {
+		flex: 0 1 auto;
+		min-width: 0;
+		margin: 0;
+		overflow: visible;
+		color: rgba(246, 241, 229, 0.62);
+		font-size: 0.68rem;
+		letter-spacing: 0.015em;
+		text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+	}
+
+	.source-credit,
+	.site-links {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		white-space: nowrap;
+	}
+
+	.site-links {
+		color: rgba(246, 241, 229, 0.62);
+		font-size: 0.68rem;
+		letter-spacing: 0.015em;
+		text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+	}
+
+	.data-credit a,
+	.site-links a {
+		color: rgba(246, 241, 229, 0.82);
+		text-decoration-color: rgba(239, 193, 111, 0.35);
+		text-underline-offset: 0.18em;
+		transition: color 160ms ease;
+	}
+
+	.data-credit a:hover,
+	.site-links a:hover {
+		color: var(--gold-bright);
+	}
+
+	.gesture-hint {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0;
+		color: rgba(246, 241, 229, 0.58);
+		font-size: 0.6rem;
+		font-weight: 600;
+		letter-spacing: 0.13em;
+		text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+		text-transform: uppercase;
+		transition: opacity 500ms ease;
+	}
+
+	.gesture-hint i {
+		width: 2px;
+		height: 2px;
+		border-radius: 50%;
+		background: rgba(239, 193, 111, 0.7);
+	}
+
+	.hud-actions {
+		display: flex;
+		flex: 0 0 auto;
+		justify-content: flex-end;
+		gap: 0.55rem;
+	}
+
+	.hud-actions > button:not(.icon-button) {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: rgba(8, 11, 20, 0.6);
+		backdrop-filter: blur(14px);
+	}
+
+	.loading-screen {
+		position: absolute;
+		z-index: 10;
+		inset: 0;
+		display: grid;
+		place-content: center;
+		justify-items: center;
+		color: var(--paper);
+		background:
+			radial-gradient(circle at center, rgba(28, 31, 45, 0.84), rgba(3, 5, 13, 0.98) 45%),
+			#03050d;
+		transition: visibility 700ms ease, opacity 700ms ease;
+	}
+
+	[data-state="ready"] .loading-screen {
+		visibility: hidden;
+		opacity: 0;
+	}
+
+	.loading-screen p {
+		margin: 1.6rem 0 0.38rem;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1.3rem;
+		font-style: italic;
+		letter-spacing: 0.04em;
+	}
+
+	.loading-screen > span {
+		color: rgba(246, 241, 229, 0.34);
+		font-size: 0.58rem;
+		font-weight: 650;
+		letter-spacing: 0.17em;
+		text-transform: uppercase;
+	}
+
+	.loading-orbit {
+		position: relative;
+		width: 5.6rem;
+		height: 5.6rem;
+		animation: orbit-turn 8s linear infinite;
+	}
+
+	.loading-orbit i {
+		position: absolute;
+		inset: 0;
+		border: 1px solid rgba(239, 193, 111, 0.3);
+		border-radius: 50%;
+	}
+
+	.loading-orbit i:nth-child(1) {
+		transform: rotateX(70deg);
+	}
+
+	.loading-orbit i:nth-child(2) {
+		border-color: rgba(137, 200, 238, 0.32);
+		transform: rotateY(68deg);
+	}
+
+	.loading-orbit i:nth-child(3) {
+		inset: 1.4rem;
+		border-color: rgba(255, 241, 189, 0.75);
+		background: rgba(239, 193, 111, 0.08);
+		box-shadow: 0 0 35px rgba(239, 193, 111, 0.24);
+	}
+
+	.webgl-error {
+		position: absolute;
+		z-index: 12;
+		inset: 0;
+		place-content: center;
+		padding: 2rem;
+		color: var(--paper);
+		background: #03050d;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1.3rem;
+		text-align: center;
+	}
+
+	.webgl-error:not([hidden]) {
+		display: grid;
+	}
+
+	button:focus-visible,
+	input:focus-visible {
+		outline: 2px solid var(--gold);
+		outline-offset: 3px;
+	}
+
+	@keyframes orbit-turn {
+		to { transform: rotate(360deg); }
+	}
+
+	@media (max-width: 1400px) {
+		.gesture-hint {
+			display: none;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.masthead {
+			align-items: flex-start;
+		}
+
+		h1 {
+			font-size: clamp(3rem, 10vw, 5rem);
+		}
+
+		.deck {
+			display: none;
+		}
+
+		.passage-search {
+			width: min(22rem, 48vw);
+		}
+
+		.passage-panel {
+			top: auto;
+			right: 1.25rem;
+			bottom: 7.25rem;
+			transform: translateY(0.8rem);
+		}
+
+		.passage-panel.is-open {
+			transform: translateY(0);
+		}
+
+		.legend {
+			flex-wrap: wrap;
+			gap: 0.65rem;
+		}
+
+		.legend .total {
+			display: inline-flex;
+			flex: 0 0 100%;
+			padding-left: 0;
+			border-left: 0;
+			font-size: 0.58rem;
+		}
+
+		.legend > span {
+			font-size: 0;
+		}
+
+		.legend > span::after {
+			font-size: 0.58rem;
+		}
+
+		.legend > span:first-child::after { content: "Old"; }
+		.legend > span:nth-child(2)::after { content: "New"; }
+	}
+
+	@media (max-width: 1200px) {
+		.hud {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 0.65rem;
+			padding-top: 0.85rem;
+			padding-bottom: 1rem;
+		}
+
+		.legend-block {
+			grid-column: 1;
+			grid-row: 1;
+		}
+
+		.hud-actions {
+			grid-column: 2;
+			grid-row: 1;
+			justify-self: end;
+		}
+	}
+
+	@media (max-width: 640px) {
+		#scripture-atlas {
+			min-height: 540px;
+		}
+
+		.masthead {
+			flex-direction: column;
+			gap: 1.4rem;
+			padding: max(1rem, env(safe-area-inset-top)) 1rem 0;
+		}
+
+		.brand {
+			pointer-events: none;
+		}
+
+		.eyebrow {
+			margin-bottom: 0.65rem;
+		}
+
+		h1 {
+			max-width: none;
+			font-size: clamp(2.65rem, 14vw, 4rem);
+			line-height: 0.8;
+		}
+
+		.passage-search {
+			width: 100%;
+		}
+
+		.passage-search label {
+			display: none;
+		}
+
+		.search-message {
+			position: absolute;
+		}
+
+		.passage-panel {
+			right: 0.75rem;
+			bottom: calc(7.25rem + env(safe-area-inset-bottom));
+			width: calc(100% - 1.5rem);
+			padding: 1.05rem;
+		}
+
+		blockquote {
+			display: -webkit-box;
+			overflow: hidden;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 4;
+			margin-top: 0.9rem;
+		}
+
+		.connection-heading {
+			margin-top: 0.9rem;
+			padding-top: 0.75rem;
+		}
+
+		.connection-list {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.connection-list.is-expanded {
+			max-height: 5.75rem;
+		}
+
+		:global(.connection-link) {
+			padding: 0.58rem 0.52rem;
+		}
+
+		.hud {
+			bottom: env(safe-area-inset-bottom);
+			padding: 0.8rem 0.8rem 0.9rem;
+		}
+
+		.data-credit {
+			font-size: 0.68rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.credit-prefix {
+			display: none;
+		}
+
+		.hud-actions > button:not(.icon-button) {
+			padding-inline: 0.66rem;
+		}
+
+		.hud-actions > button:not(.icon-button) span {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			scroll-behavior: auto !important;
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+</style>
