@@ -1,0 +1,667 @@
+<main id="reference-browser" data-state="loading">
+	<div class="atmosphere" aria-hidden="true"></div>
+
+	<header class="topbar">
+		<a class="wordmark" href="/" aria-label="Bible Connections home">
+			<span></span>
+			Bible Connections
+		</a>
+		<nav class="view-switch" aria-label="Cross-reference view">
+			<a href="/">Visual</a>
+			<span aria-current="page">List</span>
+		</nav>
+	</header>
+
+	<section class="intro" aria-labelledby="list-title">
+		<p class="eyebrow"><span></span> The complete index</p>
+		<h1 id="list-title">Every connection,<br /><em>in canonical order.</em></h1>
+		<p class="deck">
+			Browse all 344,794 cross-references from Genesis to Revelation. Filter either side of the
+			connection, then open any passage on Lets.Bible.
+		</p>
+	</section>
+
+	<section class="list-card" aria-labelledby="browser-title">
+		<div class="list-heading">
+			<div>
+				<p>Cross-reference index</p>
+				<h2 id="browser-title">Browse the connections</h2>
+			</div>
+			<p class="result-summary" id="result-summary" aria-live="polite">Loading references…</p>
+		</div>
+
+		<form class="filters" id="reference-filters">
+			<label>
+				<span>From book</span>
+				<select id="source-book" name="from" disabled>
+					<option value="">Loading books…</option>
+				</select>
+			</label>
+			<span class="filter-arrow" aria-hidden="true">→</span>
+			<label>
+				<span>To book</span>
+				<select id="target-book" name="to" disabled>
+					<option value="">Loading books…</option>
+				</select>
+			</label>
+			<button id="reset-filters" type="reset" disabled>Reset</button>
+		</form>
+
+		<div class="column-headings" aria-hidden="true">
+			<span>Source passage</span>
+			<span></span>
+			<span>Referenced passage</span>
+		</div>
+
+		<ol class="reference-list" id="reference-list" aria-busy="true">
+			{Array.from({ length: 6 }, (_, index) => (
+				<li class="reference-row skeleton-row" aria-hidden="true" data-index={index}>
+					<div><i></i><b></b></div>
+					<span></span>
+					<div><i></i><b></b></div>
+				</li>
+			))}
+		</ol>
+
+		<div class="list-error" id="list-error" role="alert" hidden>
+			<p>The cross-reference index could not be loaded.</p>
+			<button id="retry-load" type="button">Try again</button>
+		</div>
+
+		<div class="list-sentinel" id="list-sentinel" role="status" hidden>
+			<i aria-hidden="true"></i>
+			<span>Loading more references…</span>
+		</div>
+	</section>
+
+	<footer class="page-footer">
+		<p>
+			Cross-reference data from
+			<a href="https://www.openbible.info/labs/cross-references/">OpenBible.info</a>
+			<span aria-hidden="true">·</span>
+			<a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>
+		</p>
+		<nav aria-label="Related sites">
+			<a href="https://lets.church/">Lets.Church</a>
+			<span aria-hidden="true">·</span>
+			<a href="https://lets.bible/">Lets.Bible</a>
+		</nav>
+	</footer>
+</main>
+
+<script>
+	import '../scripts/cross-reference-list';
+</script>
+
+<style>
+	#reference-browser {
+		--gold: #efc16f;
+		--gold-bright: #fff1bd;
+		--blue: #89c8ee;
+		--ink: #03050d;
+		--paper: #f6f1e5;
+		position: relative;
+		isolation: isolate;
+		min-height: 100svh;
+		overflow: hidden;
+		color: var(--paper);
+		background:
+			radial-gradient(circle at 14% 8%, rgba(94, 65, 25, 0.2), transparent 29rem),
+			radial-gradient(circle at 86% 36%, rgba(42, 91, 126, 0.15), transparent 33rem),
+			#03050d;
+	}
+
+	#reference-browser::after {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		pointer-events: none;
+		content: "";
+		background: linear-gradient(110deg, rgba(239, 193, 111, 0.03), transparent 34% 67%, rgba(86, 159, 207, 0.04));
+	}
+
+	.atmosphere {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		pointer-events: none;
+		background-image: radial-gradient(rgba(246, 241, 229, 0.2) 0.55px, transparent 0.7px);
+		background-size: 29px 29px;
+		mask-image: linear-gradient(to bottom, #000, transparent 42rem);
+		opacity: 0.28;
+	}
+
+	.topbar {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: min(88rem, calc(100% - 3rem));
+		margin: 0 auto;
+		padding: 1.4rem 0;
+		border-bottom: 1px solid rgba(246, 241, 229, 0.1);
+	}
+
+	.wordmark {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.72rem;
+		color: rgba(246, 241, 229, 0.82);
+		font-size: 0.66rem;
+		font-weight: 650;
+		letter-spacing: 0.18em;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.wordmark > span {
+		width: 2.2rem;
+		height: 1px;
+		background: linear-gradient(90deg, var(--gold), transparent);
+	}
+
+	.view-switch {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0.25rem;
+		border: 1px solid rgba(246, 241, 229, 0.11);
+		border-radius: 999px;
+		background: rgba(9, 12, 22, 0.72);
+	}
+
+	.view-switch a,
+	.view-switch span {
+		padding: 0.55rem 0.85rem;
+		border-radius: 999px;
+		color: rgba(246, 241, 229, 0.52);
+		font-size: 0.61rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.view-switch a:hover {
+		color: var(--gold-bright);
+	}
+
+	.view-switch [aria-current="page"] {
+		color: #1d1508;
+		background: var(--gold);
+	}
+
+	.intro {
+		width: min(78rem, calc(100% - 3rem));
+		margin: 0 auto;
+		padding: clamp(4rem, 9vw, 8.5rem) 0 clamp(3.5rem, 7vw, 6.5rem);
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 0 0 1.35rem;
+		color: rgba(246, 241, 229, 0.6);
+		font-size: 0.64rem;
+		font-weight: 650;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+	}
+
+	.eyebrow span {
+		display: inline-block;
+		width: 2.6rem;
+		height: 1px;
+		background: linear-gradient(90deg, var(--gold), transparent);
+	}
+
+	h1 {
+		max-width: 12ch;
+		margin: 0;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(3.4rem, 7.7vw, 7.5rem);
+		font-weight: 400;
+		line-height: 0.84;
+		letter-spacing: -0.062em;
+		text-wrap: balance;
+	}
+
+	h1 em {
+		color: var(--gold-bright);
+		font-weight: 400;
+		text-shadow: 0 0 40px rgba(239, 193, 111, 0.12);
+	}
+
+	.deck {
+		max-width: 46rem;
+		margin: 2rem 0 0;
+		color: rgba(246, 241, 229, 0.57);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(1.05rem, 1.5vw, 1.28rem);
+		font-style: italic;
+		line-height: 1.6;
+	}
+
+	.list-card {
+		width: min(88rem, calc(100% - 3rem));
+		margin: 0 auto;
+		padding: clamp(1.25rem, 3vw, 2.5rem);
+		border: 1px solid rgba(246, 241, 229, 0.12);
+		border-radius: 1.5rem;
+		background: rgba(8, 11, 20, 0.76);
+		box-shadow: 0 34px 100px rgba(0, 0, 0, 0.26);
+		backdrop-filter: blur(20px);
+	}
+
+	.list-heading {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 2rem;
+	}
+
+	.list-heading p:first-child {
+		margin: 0 0 0.4rem;
+		color: rgba(239, 193, 111, 0.66);
+		font-size: 0.6rem;
+		font-weight: 650;
+		letter-spacing: 0.17em;
+		text-transform: uppercase;
+	}
+
+	.list-heading h2 {
+		margin: 0;
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: clamp(1.8rem, 3vw, 2.7rem);
+		font-weight: 400;
+		letter-spacing: -0.035em;
+	}
+
+	.result-summary {
+		margin: 0;
+		color: rgba(246, 241, 229, 0.48);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.07em;
+		text-align: right;
+		text-transform: uppercase;
+	}
+
+	.filters {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+		align-items: end;
+		gap: 0.8rem;
+		margin: 2rem 0 1.4rem;
+		padding: 1rem;
+		border: 1px solid rgba(246, 241, 229, 0.09);
+		border-radius: 1rem;
+		background: rgba(246, 241, 229, 0.025);
+	}
+
+	.filters label > span {
+		display: block;
+		margin: 0 0 0.45rem 0.2rem;
+		color: rgba(246, 241, 229, 0.44);
+		font-size: 0.57rem;
+		font-weight: 650;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+	}
+
+	.filters select {
+		width: 100%;
+		padding: 0.72rem 2.4rem 0.72rem 0.85rem;
+		border: 1px solid rgba(246, 241, 229, 0.12);
+		border-radius: 0.7rem;
+		color: var(--paper);
+		background: #10131d;
+		font: inherit;
+		font-size: 0.78rem;
+		cursor: pointer;
+	}
+
+	.filter-arrow {
+		padding-bottom: 0.72rem;
+		color: rgba(239, 193, 111, 0.5);
+	}
+
+	.filters button,
+	.list-error button {
+		padding: 0.72rem 1rem;
+		border: 1px solid rgba(239, 193, 111, 0.32);
+		border-radius: 999px;
+		color: rgba(255, 241, 189, 0.84);
+		background: rgba(239, 193, 111, 0.07);
+		font-size: 0.61rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.filters button:hover,
+	.list-error button:hover {
+		background: rgba(239, 193, 111, 0.15);
+	}
+
+	.filters button:disabled {
+		cursor: default;
+		opacity: 0.3;
+	}
+
+	.column-headings,
+	:global(.reference-row) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 1fr);
+		gap: clamp(0.7rem, 2vw, 1.5rem);
+	}
+
+	.column-headings {
+		padding: 0.7rem 1rem;
+		color: rgba(246, 241, 229, 0.34);
+		font-size: 0.56rem;
+		font-weight: 650;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.reference-list {
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid rgba(246, 241, 229, 0.1);
+		list-style: none;
+	}
+
+	:global(.reference-row) {
+		align-items: center;
+		padding: 1rem;
+		border-bottom: 1px solid rgba(246, 241, 229, 0.08);
+		transition: background 140ms ease;
+	}
+
+	:global(.reference-row:hover) {
+		background: rgba(246, 241, 229, 0.025);
+	}
+
+	:global(.passage-cell) {
+		min-width: 0;
+	}
+
+	:global(.column-label) {
+		display: none;
+	}
+
+	:global(.passage-reference) {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.4rem;
+		color: var(--gold-bright);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1.03rem;
+		text-decoration-color: rgba(239, 193, 111, 0.28);
+		text-underline-offset: 0.2em;
+	}
+
+	:global(.passage-reference::after) {
+		color: rgba(239, 193, 111, 0.45);
+		font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+		font-size: 0.65rem;
+		content: "↗";
+	}
+
+	:global(.passage-reference:hover) {
+		color: #fff8da;
+	}
+
+	:global(.passage-text) {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		margin: 0.4rem 0 0;
+		color: rgba(246, 241, 229, 0.5);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 0.86rem;
+		line-height: 1.4;
+	}
+
+	:global(.connection-arrow) {
+		color: rgba(239, 193, 111, 0.4);
+		font-size: 1rem;
+		text-align: center;
+	}
+
+	.skeleton-row {
+		min-height: 5.7rem;
+	}
+
+	.skeleton-row div {
+		display: grid;
+		gap: 0.65rem;
+	}
+
+	.skeleton-row i,
+	.skeleton-row b,
+	.skeleton-row > span {
+		display: block;
+		height: 0.7rem;
+		border-radius: 999px;
+		background: rgba(246, 241, 229, 0.07);
+		animation: skeleton-pulse 1.5s ease-in-out infinite alternate;
+	}
+
+	.skeleton-row i { width: 28%; }
+	.skeleton-row b { width: 82%; }
+	.skeleton-row > span { width: 1.2rem; }
+
+	:global(.empty-list) {
+		padding: 4rem 1rem;
+		color: rgba(246, 241, 229, 0.5);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1.1rem;
+		font-style: italic;
+		text-align: center;
+	}
+
+	.list-error {
+		padding: 4rem 1rem;
+		text-align: center;
+	}
+
+	.list-error[hidden] {
+		display: none;
+	}
+
+	.list-error p {
+		margin: 0 0 1rem;
+		color: rgba(246, 241, 229, 0.58);
+		font-family: "Iowan Old Style", Baskerville, "Times New Roman", serif;
+		font-size: 1.1rem;
+	}
+
+	.list-sentinel {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.7rem;
+		min-height: 7rem;
+		color: rgba(246, 241, 229, 0.4);
+		font-size: 0.6rem;
+		font-weight: 650;
+		letter-spacing: 0.11em;
+		text-transform: uppercase;
+	}
+
+	.list-sentinel[hidden] {
+		display: none;
+	}
+
+	.list-sentinel i {
+		width: 0.8rem;
+		height: 0.8rem;
+		border: 1px solid rgba(239, 193, 111, 0.25);
+		border-top-color: var(--gold);
+		border-radius: 50%;
+		animation: sentinel-turn 800ms linear infinite;
+	}
+
+	.page-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		width: min(88rem, calc(100% - 3rem));
+		margin: 0 auto;
+		padding: 2rem 0 2.5rem;
+		color: rgba(246, 241, 229, 0.4);
+		font-size: 0.68rem;
+	}
+
+	.page-footer p {
+		margin: 0;
+	}
+
+	.page-footer nav,
+	.page-footer p {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.page-footer a {
+		color: rgba(246, 241, 229, 0.68);
+		text-decoration-color: rgba(239, 193, 111, 0.28);
+		text-underline-offset: 0.18em;
+	}
+
+	.page-footer a:hover {
+		color: var(--gold-bright);
+	}
+
+	select:focus-visible,
+	button:focus-visible,
+	a:focus-visible,
+	input:focus-visible {
+		outline: 2px solid var(--gold);
+		outline-offset: 3px;
+	}
+
+	@keyframes skeleton-pulse {
+		to { opacity: 0.36; }
+	}
+
+	@keyframes sentinel-turn {
+		to { transform: rotate(360deg); }
+	}
+
+	@media (max-width: 760px) {
+		.topbar,
+		.intro,
+		.list-card,
+		.page-footer {
+			width: min(100% - 2rem, 88rem);
+		}
+
+		.intro {
+			padding-block: 4.5rem 3.5rem;
+		}
+
+		h1 {
+			font-size: clamp(3rem, 14vw, 5.4rem);
+		}
+
+		.list-heading {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 0.65rem;
+		}
+
+		.result-summary {
+			text-align: left;
+		}
+
+		.filters {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+
+		.filter-arrow {
+			display: none;
+		}
+
+		.filters button {
+			grid-column: 1 / -1;
+			justify-self: start;
+		}
+
+		.column-headings {
+			display: none;
+		}
+
+		:global(.reference-row) {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 0.9rem 1rem;
+			padding: 1rem 0.25rem;
+		}
+
+		:global(.passage-cell) {
+			grid-column: 1;
+		}
+
+		:global(.passage-cell:nth-of-type(2)) {
+			grid-row: 2;
+		}
+
+		:global(.column-label) {
+			display: block;
+			margin-bottom: 0.35rem;
+			color: rgba(246, 241, 229, 0.3);
+			font-size: 0.54rem;
+			font-weight: 650;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+		}
+
+		:global(.connection-arrow) {
+			display: none;
+		}
+
+		.page-footer {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.wordmark {
+			font-size: 0;
+		}
+
+		.wordmark > span {
+			width: 2.8rem;
+		}
+
+		.filters {
+			grid-template-columns: 1fr;
+		}
+
+		.filters button {
+			grid-column: auto;
+		}
+
+		.page-footer p {
+			flex-wrap: wrap;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+</style>

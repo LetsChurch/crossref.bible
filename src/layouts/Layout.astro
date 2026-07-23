@@ -2,11 +2,13 @@
 interface Props {
 	title?: string;
 	description?: string;
+	scrollable?: boolean;
 }
 
 const {
 	title = 'Bible Cross-Reference Atlas',
 	description = 'An interactive atlas of Bible cross references.',
+	scrollable = false,
 } = Astro.props;
 ---
 
@@ -22,7 +24,7 @@ const {
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body>
+	<body class:list={{ 'scrollable-page': scrollable }}>
 		<slot />
 	</body>
 </html>
@@ -53,6 +55,10 @@ const {
 
 	body {
 		overflow: hidden;
+	}
+
+	body.scrollable-page {
+		overflow: auto;
 	}
 
 	button,

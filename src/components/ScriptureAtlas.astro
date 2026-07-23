@@ -130,7 +130,11 @@ import AtlasSettings from './AtlasSettings.astro';
 		</div>
 		<p class="gesture-hint" id="gesture-hint">Drag to orbit <i></i> Scroll to zoom <i></i> Select a verse</p>
 		<div class="hud-actions">
-			<button id="random-verse" type="button" aria-label="Select a random verse with cross-references">
+			<a class="hud-action" href="/list/">
+				<i class="list-view-icon" aria-hidden="true"></i>
+				<span>List</span>
+			</a>
+			<button class="hud-action" id="random-verse" type="button" aria-label="Select a random verse with cross-references">
 				<svg viewBox="0 0 24 24" aria-hidden="true">
 					<path d="M18 4h2v2M4 20 20 4M20 18v2h-2M15 15l5 5M4 4l5 5"></path>
 				</svg>
@@ -368,7 +372,7 @@ import AtlasSettings from './AtlasSettings.astro';
 	}
 
 	.search-shell button,
-	.hud-actions > button:not(.icon-button) {
+	.hud-action {
 		padding: 0.66rem 1.05rem;
 		border: 1px solid rgba(239, 193, 111, 0.45);
 		border-radius: 999px;
@@ -378,12 +382,13 @@ import AtlasSettings from './AtlasSettings.astro';
 		font-weight: 700;
 		letter-spacing: 0.13em;
 		text-transform: uppercase;
+		text-decoration: none;
 		cursor: pointer;
 		transition: background 160ms ease, transform 160ms ease;
 	}
 
 	.search-shell button:hover,
-	.hud-actions > button:not(.icon-button):hover {
+	.hud-action:hover {
 		background: rgba(239, 193, 111, 0.2);
 		transform: translateY(-1px);
 	}
@@ -932,12 +937,26 @@ import AtlasSettings from './AtlasSettings.astro';
 		gap: 0.55rem;
 	}
 
-	.hud-actions > button:not(.icon-button) {
+	.hud-action {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
 		background: rgba(8, 11, 20, 0.6);
 		backdrop-filter: blur(14px);
+	}
+
+	.list-view-icon {
+		display: grid;
+		gap: 2px;
+		width: 0.9rem;
+	}
+
+	.list-view-icon::before,
+	.list-view-icon::after {
+		height: 1px;
+		background: currentColor;
+		box-shadow: 0 3px currentColor;
+		content: "";
 	}
 
 	.loading-screen {
@@ -1186,21 +1205,38 @@ import AtlasSettings from './AtlasSettings.astro';
 			padding: 0.8rem 0.8rem 0.9rem;
 		}
 
+		.hud-actions {
+			display: grid;
+			grid-template-columns: auto auto;
+			grid-template-rows: auto auto;
+			justify-items: center;
+			gap: 0.45rem 0.55rem;
+		}
+
+		.hud-action {
+			grid-row: 1;
+		}
+
+		.hud-actions .icon-button {
+			grid-row: 2;
+			justify-self: end;
+		}
+
 		.data-credit {
 			font-size: 0.68rem;
+		}
+
+		.credit-prefix {
+			display: none;
 		}
 	}
 
 	@media (max-width: 480px) {
-		.credit-prefix {
-			display: none;
-		}
-
-		.hud-actions > button:not(.icon-button) {
+		.hud-action {
 			padding-inline: 0.66rem;
 		}
 
-		.hud-actions > button:not(.icon-button) span {
+		.hud-action span {
 			display: none;
 		}
 	}

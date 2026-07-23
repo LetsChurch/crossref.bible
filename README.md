@@ -1,6 +1,6 @@
 # Bible Cross-Reference Atlas
 
-An interactive Three.js visualization of the Bible's cross-reference network. The visualization places each BSB verse in canonical order. Selecting a verse displays its text and cross-references. Reference and phrase search run locally over the BSB text with a worker-built FlexSearch index that is cached in IndexedDB after its first build. Closely matched search results use a logarithmic Common Crawl appearance count as a secondary popularity tie-breaker, following Lets.Bible's ranking model.
+An interactive Three.js visualization of the Bible's cross-reference network, with a continuous list view for browsing all 344,794 connections. The visualization places each BSB verse in canonical order. Selecting a verse displays its text and cross-references. Reference and phrase search run locally over the BSB text with a worker-built FlexSearch index that is cached in IndexedDB after its first build. Closely matched search results use a logarithmic Common Crawl appearance count as a secondary popularity tie-breaker, following Lets.Bible's ranking model.
 
 ## Development
 
